@@ -1,10 +1,10 @@
-// swift-tools-version:5.7
+// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
     name: "MindmapDesktops",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v10_15)
     ],
     products: [
         .executable(
@@ -15,10 +15,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "MindmapDesktops",
-            dependencies: [],
-            resources: [
-                .process("Resources")
-            ]),
+            dependencies: []),
         .testTarget(
             name: "MindmapDesktopsTests",
             dependencies: ["MindmapDesktops"]),

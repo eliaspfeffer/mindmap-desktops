@@ -2,6 +2,7 @@ import Cocoa
 import Foundation
 
 // Model representing a virtual desktop (Space) in macOS
+@MainActor
 class VirtualDesktop: NSObject, Identifiable, ObservableObject {
     let id = UUID()
     
@@ -27,9 +28,7 @@ class VirtualDesktop: NSObject, Identifiable, ObservableObject {
     // Update preview image asynchronously
     func updatePreview() async {
         let image = await SpaceManager.shared.captureDesktopPreview(for: spaceID)
-        await MainActor.run {
-            self.previewImage = image
-        }
+        self.previewImage = image
     }
     
     // Update desktop information

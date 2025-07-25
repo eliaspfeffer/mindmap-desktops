@@ -9,18 +9,18 @@ class SpaceManager: ObservableObject {
     @Published var virtualDesktops: [VirtualDesktop] = []
     @Published var currentDesktopID: CGWindowID?
     
-    private let refreshTimer: Timer
     private let notificationCenter = NSWorkspace.shared.notificationCenter
+    private var refreshTimer: Timer?
     
     private init() {
-        // Set up refresh timer to update desktop information periodically
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+        setupNotifications()
+        
+        // Set up refresh timer after initialization
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             Task {
-                await self.refreshDesktops()
+                await self?.refreshDesktops()
             }
         }
-        
-        setupNotifications()
         
         // Initial load
         Task {
@@ -29,7 +29,7 @@ class SpaceManager: ObservableObject {
     }
     
     deinit {
-        refreshTimer.invalidate()
+        refreshTimer?.invalidate()
         notificationCenter.removeObserver(self)
     }
     
@@ -189,6 +189,7 @@ class SpaceManager: ObservableObject {
         return visibleApps.compactMap { $0.localizedName }
     }
     
+    @MainActor
     private func updateActiveDesktop() {
         for desktop in virtualDesktops {
             desktop.isActive = (desktop.spaceID == currentDesktopID)

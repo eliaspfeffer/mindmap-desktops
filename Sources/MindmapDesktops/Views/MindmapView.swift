@@ -406,16 +406,24 @@ class MindmapView: NSView {
         let menu = NSMenu()
         
         if node.type == .desktop {
-            menu.addItem(withTitle: "Switch to Desktop", action: #selector(switchToDesktop(_:)), keyEquivalent: "")
-            menu.addItem(withTitle: "Rename Desktop", action: #selector(renameDesktop(_:)), keyEquivalent: "")
+            let switchItem = NSMenuItem(title: "Switch to Desktop", action: #selector(switchToDesktop(_:)), keyEquivalent: "")
+            switchItem.representedObject = node
+            menu.addItem(switchItem)
+            
+            let renameItem = NSMenuItem(title: "Rename Desktop", action: #selector(renameDesktop(_:)), keyEquivalent: "")
+            renameItem.representedObject = node
+            menu.addItem(renameItem)
+            
             menu.addItem(NSMenuItem.separator())
         }
         
-        menu.addItem(withTitle: "Delete Node", action: #selector(deleteNode(_:)), keyEquivalent: "")
-        menu.addItem(withTitle: "Add Child", action: #selector(addChildNode(_:)), keyEquivalent: "")
+        let deleteItem = NSMenuItem(title: "Delete Node", action: #selector(deleteNode(_:)), keyEquivalent: "")
+        deleteItem.representedObject = node
+        menu.addItem(deleteItem)
         
-        // Store node reference
-        menu.representedObject = node
+        let addChildItem = NSMenuItem(title: "Add Child", action: #selector(addChildNode(_:)), keyEquivalent: "")
+        addChildItem.representedObject = node
+        menu.addItem(addChildItem)
         
         NSMenu.popUpContextMenu(menu, with: NSApp.currentEvent!, for: self)
     }
@@ -423,13 +431,19 @@ class MindmapView: NSView {
     private func showBackgroundContextMenu(at point: CGPoint) {
         let menu = NSMenu()
         
-        menu.addItem(withTitle: "Create New Desktop", action: #selector(createNewDesktop(_:)), keyEquivalent: "")
-        menu.addItem(withTitle: "Add Category", action: #selector(addCategory(_:)), keyEquivalent: "")
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(withTitle: "Reset Layout", action: #selector(resetLayoutAction(_:)), keyEquivalent: "")
+        let newDesktopItem = NSMenuItem(title: "Create New Desktop", action: #selector(createNewDesktop(_:)), keyEquivalent: "")
+        newDesktopItem.representedObject = NSValue(point: point)
+        menu.addItem(newDesktopItem)
         
-        // Store click point
-        menu.representedObject = NSValue(point: point)
+        let addCategoryItem = NSMenuItem(title: "Add Category", action: #selector(addCategory(_:)), keyEquivalent: "")
+        addCategoryItem.representedObject = NSValue(point: point)
+        menu.addItem(addCategoryItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        let resetLayoutItem = NSMenuItem(title: "Reset Layout", action: #selector(resetLayoutAction(_:)), keyEquivalent: "")
+        resetLayoutItem.representedObject = NSValue(point: point)
+        menu.addItem(resetLayoutItem)
         
         NSMenu.popUpContextMenu(menu, with: NSApp.currentEvent!, for: self)
     }
@@ -443,19 +457,19 @@ class MindmapView: NSView {
     // MARK: - Context Menu Actions
     
     @objc private func switchToDesktop(_ sender: NSMenuItem) {
-        guard let node = sender.menu?.representedObject as? MindMapNode else { return }
+        guard let node = sender.representedObject as? MindMapNode else { return }
         node.virtualDesktop?.activate()
     }
     
     @objc private func renameDesktop(_ sender: NSMenuItem) {
-        guard let node = sender.menu?.representedObject as? MindMapNode else { return }
+        guard let node = sender.representedObject as? MindMapNode else { return }
         // TODO: Implement rename dialog
         print("Rename desktop: \(node.title)")
     }
     
     @objc private func deleteNode(_ sender: NSMenuItem) {
-        guard let node = sender.menu?.representedObject as? MindMapNode else { return }
-        if node.type != .root {
+        guard let node = sender.representedObject as? MindMapNode else { return }
+        if node.type != MindMapNodeType.root {
             node.removeFromParent()
             nodes.removeAll { $0.id == node.id }
             rebuildLayers()
@@ -463,7 +477,7 @@ class MindmapView: NSView {
     }
     
     @objc private func addChildNode(_ sender: NSMenuItem) {
-        guard let parentNode = sender.menu?.representedObject as? MindMapNode else { return }
+        guard let parentNode = sender.representedObject as? MindMapNode else { return }
         
         let newNode = MindMapNode(type: .task, title: "New Task")
         newNode.position = CGPoint(
@@ -479,11 +493,11 @@ class MindmapView: NSView {
     }
     
     @objc private func createNewDesktop(_ sender: NSMenuItem) {
-        SpaceManager.shared.createNewDesktop()
+        _ = SpaceManager.shared.createNewDesktop()
     }
     
     @objc private func addCategory(_ sender: NSMenuItem) {
-        guard let pointValue = sender.menu?.representedObject as? NSValue else { return }
+        guard let pointValue = sender.representedObject as? NSValue else { return }
         let point = pointValue.pointValue
         
         let categoryNode = MindMapNode(type: .category, title: "New Category")

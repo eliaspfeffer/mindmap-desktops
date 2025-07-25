@@ -2,7 +2,6 @@ import Cocoa
 import Foundation
 
 // Main entry point for the Mindmap Desktops application
-@main
 class AppMain {
     static func main() {
         let app = NSApplication.shared
@@ -23,4 +22,7 @@ class AppMain {
             print("Accessibility permissions required for desktop switching functionality")
         }
     }
-} 
+}
+
+// Start the application
+AppMain.main() 
